@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7 Days</title>
+<style>
+:root{
+  --bg:#f5f7f9; --card:#fff; --ink:#18212b; --muted:#66717d;
+  --line:#dfe5ea; --accent:#334e68; --accent2:#486581;
+  --soft:#eef3f7; --good:#2f855a; --warn:#b7791f; --danger:#c53030;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;line-height:1.65}
+.app{max-width:1180px;margin:auto;padding:24px}
+header{background:linear-gradient(135deg,#243b53,#486581);color:#fff;border-radius:24px;padding:34px 32px;margin-bottom:20px;box-shadow:0 12px 30px #243b5320}
+header h1{margin:0 0 8px;font-size:30px}
+header p{margin:0;color:#e6edf3}
+.headmeta{margin-top:14px;font-size:13px;color:#cfdce8;display:flex;gap:16px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:20px}
+.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 5px 18px #243b5308}
+.sidebar{padding:18px;height:max-content;position:sticky;top:15px}
+.sidebar h3{margin:4px 0 12px}
+.daybtn{width:100%;text-align:left;border:0;background:transparent;padding:12px;border-radius:12px;cursor:pointer;font-weight:700;color:var(--ink);margin:3px 0;position:relative;font-family:inherit}
+.daybtn:hover,.daybtn.active{background:var(--soft);color:var(--accent)}
+.daybtn small{display:block;color:var(--muted);font-weight:400}
+.daybtn .stamp{position:absolute;top:10px;right:10px;font-size:11px;color:var(--good);font-weight:800}
+.progress{display:block;height:9px;background:#e8edf1;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.progress>span{display:block;height:100%;background:var(--accent);width:0%;transition:.3s}
+main{min-width:0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+button,.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 13px;border-radius:10px;cursor:pointer;font-weight:700;font-family:inherit}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.danger{color:var(--danger)}
+button.ghost{background:transparent;border-style:dashed}
+button:hover{filter:brightness(.98)}
+button:focus-visible,.check input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #48658155;outline-offset:2px}
+.card{padding:22px;margin-bottom:16px}
+.kicker{font-size:12px;letter-spacing:.08em;color:var(--accent2);font-weight:800}
+h2{margin:3px 0 8px;font-size:25px}
+h3{margin:0 0 8px}
+.question{background:var(--soft);border-left:4px solid var(--accent);padding:14px 16px;border-radius:10px;margin:15px 0}
+.checklist{display:grid;gap:7px}
+.check{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px}
+.check:hover{background:#fafbfc}
+.check input{margin-top:6px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.retag{display:inline-block;font-size:11px;font-weight:800;color:var(--warn);border:1px solid #e8d8b0;background:#fdf8ec;border-radius:8px;padding:0 7px;margin-left:8px;vertical-align:1px;white-space:nowrap}
+.sectionlink{display:inline-block;font-size:13px;color:var(--accent2);text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:5px 12px;font-weight:700;margin-bottom:10px}
+.sectionlink:hover{background:var(--soft)}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;resize:vertical;background:#fff}
+textarea{min-height:105px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.metric{background:var(--soft);padding:14px;border-radius:12px;text-align:center}
+.metric strong{display:block;font-size:24px}
+.quote{font-size:18px;font-weight:700;padding:18px;border:1px solid var(--line);border-radius:14px;background:#fcfdfd}
+.hint{color:var(--muted);font-size:13px;margin:4px 0 10px}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.timerbox{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--soft);border-radius:14px;padding:16px;margin:12px 0}
+.timerbox .clock{font-size:40px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.03em;color:var(--accent)}
+.timerbox.running .clock{color:var(--good)}
+.timerbox.done .clock{color:var(--danger)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:#243b53;color:#fff;padding:9px 18px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.report-day{border-top:2px solid var(--accent);padding-top:14px;margin-top:20px}
+.report-day:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.report-note{background:#fcfdfd;border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin:7px 0;white-space:pre-wrap}
+.report-note b{color:var(--accent2);font-size:12px;display:block;margin-bottom:3px}
+.badge{display:inline-block;font-size:12px;font-weight:800;border-radius:99px;padding:2px 10px;background:var(--soft);color:var(--accent)}
+.badge.done{background:#e6f4ea;color:var(--good)}
+.footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.sidebar{position:static}.metrics{grid-template-columns:repeat(2,1fr)}header h1{font-size:24px}.timerbox .clock{font-size:32px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+ body{background:#fff}.sidebar,.toolbar,.footer,.rowbtns,.timerbox,.toast,.sectionlink{display:none!important}
+ .grid{display:block}
+ .card{box-shadow:none;break-inside:avoid;border-color:#bbb}
+ header{color:#000;background:#fff;border:1px solid #aaa;box-shadow:none}
+ header .headmeta{color:#444}
+ textarea{border:1px solid #bbb;overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="kicker" style="color:#d9e5ef">PASTORAL BIBLE FORMATION PROJECT</div>
+  <h1>7 Days</h1>
+  <p>성경을 읽는 기간이 아니라, 목회자의 성경관·설교·목양·삶을 말씀 앞에서 재정렬하는 7일 프로젝트</p>
+  <div class="headmeta">
+    <span id="startDateLabel"></span>
+    <span id="todayLabel"></span>
+    <a href="https://vision-ai-lab.vercel.app/" target="_blank" rel="noopener" style="font-weight:800;color:#fff;text-decoration:underline;text-underline-offset:3px">비전AI교육연구소</a>
+  </div>
+</header>
+
+<div class="grid">
+<aside class="panel sidebar">
+  <h3>7일 여정</h3>
+  <div id="dayNav"></div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+  <div style="font-size:13px;color:var(--muted)">전체 진행률</div>
+  <span class="progress"><span id="totalProgress"></span></span>
+  <div id="progressText" style="font-size:13px"></div>
+
+  <button class="primary" style="width:100%;margin-top:14px" onclick="showReport()">7일 결산 리포트</button>
+  <button style="width:100%;margin-top:8px" onclick="printPage()">인쇄 / PDF 저장</button>
+
+  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+  <div style="font-size:13px;color:var(--muted);margin-bottom:6px">기록 백업</div>
+  <button style="width:100%" onclick="exportData()">JSON 내보내기</button>
+  <button style="width:100%;margin-top:8px" onclick="document.getElementById('importFile').click()">JSON 가져오기</button>
+  <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importData(this)">
+
+  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+  <button class="ghost" style="width:100%" onclick="resetStartDate()">시작일 오늘로 재설정</button>
+  <button class="danger" style="width:100%;margin-top:8px" onclick="resetAll()">전체 기록 초기화</button>
+</aside>
+
+<main>
+  <div class="toolbar">
+    <button onclick="prevDay()" aria-label="이전 날">← 이전</button>
+    <button onclick="nextDay()" aria-label="다음 날">다음 →</button>
+    <button onclick="goToToday()">오늘의 점검</button>
+    <span class="hint" style="align-self:center">키보드 ← → 로 이동</span>
+  </div>
+  <div id="content"></div>
+</main>
+</div>
+<div class="footer">모든 체크와 기록은 이 브라우저의 LocalStorage에 자동 저장됩니다. 서버로 전송되지 않습니다. 다른 기기로 옮기거나 백업하려면 JSON 내보내기를 사용하십시오.</div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const DATA_KEY="pastorBible7";
+const DATA_VERSION=3;
+/* 대한성서공회 개역개정 성경읽기 (공식·검증된 진입점) */
+const BIBLE_URL="https://www.bskorea.or.kr/bible/korbibReadpage.php";
+
+const days=[
+{title:"창조에서 아브라함까지",theme:"창조 → 타락 → 심판 → 언약",q:"죄로 무너진 세상을 하나님은 어떻게 회복하기 시작하시는가?",key:"성경은 실패한 인간을 찾아오시는 하나님의 이야기다.",reads:["창세기 1–3장","창세기 6–9장","창세기 11–12장","창세기 15장","창세기 17장","창세기 22장","창세기 50장"]},
+{title:"출애굽에서 신명기까지",theme:"구속 → 언약 → 거룩 → 임재",q:"구원받은 백성은 누구이며 어떻게 살아야 하는가?",key:"구원은 애굽에서 나오는 것만이 아니라 하나님의 백성이 되는 것이다.",reads:["출애굽기 1–3장","출애굽기 12장","출애굽기 14장","출애굽기 19–20장","출애굽기 32–34장","출애굽기 40장","레위기 16장","민수기 13–14장","신명기 6장","신명기 30장"]},
+{title:"여호수아에서 다윗까지",theme:"땅 → 사사 → 왕 → 다윗 언약",q:"인간의 실패 가운데 하나님은 어떻게 약속을 이어 가시는가?",key:"인간에게 필요한 것은 더 좋은 제도가 아니라 참된 왕이다.",reads:["여호수아 1장","여호수아 24장","사사기 2장","사사기 21장","룻기 1장","사무엘상 8장","사무엘상 16장","사무엘하 7장","열왕기상 8장","열왕기상 11장"]},
+{title:"솔로몬에서 포로까지",theme:"성전 → 왕국 → 우상숭배 → 심판",q:"하나님의 백성은 왜 왕국과 성전을 가지고도 실패하는가?",key:"하나님의 심판은 언약을 깨뜨린 인간에게 임하지만, 하나님의 구원 약속은 심판 속에서도 계속된다.",reads:["열왕기상 12장","열왕기하 17장","열왕기하 25장","역대하 36장","이사야 6장","이사야 9장","이사야 53장","예레미야 31장","에스겔 36장","다니엘 7장"]},
+{title:"포로에서 메시아까지",theme:"심판 → 남은 자 → 회복 → 새 언약 → 메시아",q:"인간의 실패가 반복될 때 하나님의 구원 계획은 어떻게 계속되는가?",key:"구약은 인간의 노력으로 완성될 수 없는 하나님의 약속을 바라보며 메시아를 기다린다.",reads:["에스라 1장","느헤미야 8장","학개 2장","스가랴 9장","말라기 3–4장","시편 2편","시편 22편","시편 110편","이사야 7장","이사야 9장","이사야 11장","이사야 53장","예레미야 31장","에스겔 36–37장","다니엘 7장"]},
+{title:"예수 그리스도와 교회",theme:"성육신 → 하나님 나라 → 십자가 → 부활 → 성령 → 교회",q:"구약의 모든 약속은 예수 그리스도 안에서 어떻게 성취되는가?",key:"성경의 약속과 소망은 예수 그리스도 안에서 성취된다.",reads:["마태복음 1장","마태복음 5–7장","마태복음 16장","마태복음 28장","마가복음 10장","누가복음 4장","누가복음 15장","누가복음 22–24장","요한복음 1장","요한복음 3장","요한복음 10장","요한복음 11장","요한복음 19–20장","사도행전 1–2장","사도행전 13장"]},
+{title:"복음에서 새 창조까지",theme:"복음 → 교회 → 선교 → 재림 → 새 창조",q:"하나님의 구원 이야기는 어디에서 완성되는가?",key:"성경은 하나님의 임재가 충만한 새 창조를 향해 나아간다.",reads:["로마서 1장","로마서 3장","로마서 5장","로마서 8장","로마서 12장","고린도전서 15장","갈라디아서 2장","에베소서 1장","에베소서 2장","빌립보서 2장","골로새서 1장","히브리서 1장","히브리서 11–12장","베드로전서 1장","요한일서 4장","요한계시록 21–22장"]}
+];
+
+const theology=[
+["하나님론","이 본문은 하나님이 어떤 분이심을 보여주는가?"],
+["인간론","이 본문은 인간을 어떻게 이해하게 하는가?"],
+["죄론","인간의 가장 근본적인 죄는 무엇인가?"],
+["구원론","하나님은 어떻게 구원하시는가?"],
+["기독론","이 본문은 그리스도와 어떤 관계가 있는가?"],
+["교회론","하나님의 백성은 어떤 공동체가 되어야 하는가?"],
+["종말론","하나님의 최종 목적은 무엇인가?"]
+];
+
+const reflection=[
+"오늘 말씀 앞에서 나의 죄를 발견했다.",
+"오늘 말씀에서 하나님의 은혜를 발견했다.",
+"오늘 말씀 때문에 바꾸어야 할 것을 발견했다.",
+"오늘 말씀을 성도에게 전하기 전에 나 자신에게 적용했다.",
+"오늘 말씀으로 성도 한 사람을 위해 기도했다."
+];
+
+const noteFields=[
+["theoNote","신학 노트"],["sermon","설교 한 문장"],["repent","회개와 순종"],["prayer","중보 기도"],["commit","오늘의 결단"]
+];
+
+/* 재독(再讀) 본문: 처음 등장한 날을 기록해 반복 본문에 표시 */
+const firstSeen={};
+days.forEach((d,di)=>d.reads.forEach(r=>{if(!(r in firstSeen))firstSeen[r]=di;}));
+
+function chapterCount(ref){
+ const r=ref.match(/(\d+)\s*[–\-~]\s*(\d+)/);
+ if(r)return Number(r[2])-Number(r[1])+1;
+ return ref.match(/\d+/)?1:0;
+}
+
+/* ---------- 상태 ---------- */
+let state=loadState();
+let current=Number(state.current||0);
+let mode="day"; // day | report
+let saveTimer=null;
+
+function loadState(){
+ try{
+  const s=JSON.parse(localStorage.getItem(DATA_KEY)||"{}");
+  if(typeof s!=="object"||s===null)return {version:DATA_VERSION};
+  s.version=DATA_VERSION;
+  return s;
+ }catch(e){return {version:DATA_VERSION};}
+}
+function save(showToastMsg){
+ state.current=current;
+ state.version=DATA_VERSION;
+ try{
+  localStorage.setItem(DATA_KEY,JSON.stringify(state));
+  if(showToastMsg)toast(typeof showToastMsg==="string"?showToastMsg:"저장됨 · "+new Date().toLocaleTimeString("ko-KR"));
+ }catch(e){toast("저장 실패: 브라우저 저장 공간을 확인하십시오");}
+ updateNav();updateProgress();
+}
+function key(d,kind,i){return `d${d}_${kind}_${i}`}
+function checked(d,k,i){return !!state[key(d,k,i)]}
+function getNote(d,k){return state[key(d,k)]||""}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+
+/* 체크 변경: 전체 재렌더링 없이 진행률만 갱신 → 스크롤·포커스 유지, 토스트 없음(진행바가 피드백) */
+function setCheck(d,k,i,v){
+ state[key(d,k,i)]=v;
+ markDone(d);
+ save(false);
+ updateDayMetric();
+}
+function setNoteDebounced(d,k,el){
+ clearTimeout(saveTimer);
+ saveTimer=setTimeout(()=>{state[key(d,k)]=el.value;save(true);},600);
+}
+function markDone(d){
+ const doneKey=`d${d}_doneAt`;
+ if(dayCompletion(d)===100){ if(!state[doneKey])state[doneKey]=new Date().toISOString(); }
+ else delete state[doneKey];
+}
+
+function dayCompletion(d){
+ let total=days[d].reads.length+theology.length+reflection.length+4;
+ let done=days[d].reads.filter((_,i)=>checked(d,"read",i)).length+
+          theology.filter((_,i)=>checked(d,"theo",i)).length+
+          reflection.filter((_,i)=>checked(d,"ref",i)).length+
+          ["text","theology","gospel","people"].filter(k=>checked(d,"filter",k)).length;
+ return Math.round(done/total*100);
+}
+
+/* ---------- 내비게이션/진행률 ---------- */
+function fmtDate(iso){return new Date(iso).toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"})}
+function updateNav(){
+ const nav=document.getElementById("dayNav");
+ nav.innerHTML=days.map((x,i)=>{
+  const pct=dayCompletion(i);
+  const doneAt=state[`d${i}_doneAt`];
+  return `<button class="daybtn ${i===current&&mode==="day"?"active":""}" onclick="openDay(${i})">
+  ${doneAt?`<span class="stamp">✓ ${fmtDate(doneAt)}</span>`:""}
+  <strong>DAY ${i+1}</strong><small>${x.title}</small>
+  <span class="progress"><span style="width:${pct}%"></span></span>
+  <small>${pct}% 완료</small></button>`;
+ }).join("");
+ const sd=state.startDate?new Date(state.startDate):null;
+ document.getElementById("startDateLabel").textContent=sd?("시작일 "+sd.toLocaleDateString("ko-KR")):"";
+ document.getElementById("todayLabel").textContent="오늘 "+new Date().toLocaleDateString("ko-KR",{month:"long",day:"numeric",weekday:"long"});
+}
+function updateProgress(){
+ const avg=Math.round(days.reduce((a,_,i)=>a+dayCompletion(i),0)/7);
+ document.getElementById("totalProgress").style.width=avg+"%";
+ document.getElementById("progressText").textContent=avg+"% 완료 · "+days.filter((_,i)=>state[`d${i}_doneAt`]).length+"/7일 완주";
+}
+function updateDayMetric(){
+ const el=document.getElementById("dayPct");
+ if(el)el.textContent=dayCompletion(current)+"%";
+}
+
+/* ---------- 렌더링 ---------- */
+function box(label,checkedValue,onChange){
+ return `<label class="check"><input type="checkbox" ${checkedValue?"checked":""} onchange="${onChange}"><span>${label}</span></label>`;
+}
+function noteArea(d,k,placeholder,extraStyle){
+ return `<textarea style="${extraStyle||""}" placeholder="${esc(placeholder)}" oninput="setNoteDebounced(${d},'${k}',this)">${esc(getNote(d,k))}</textarea>`;
+}
+function render(){
+ if(mode==="report")return renderReport();
+ const d=days[current];
+ const totalCh=d.reads.reduce((a,r)=>a+chapterCount(r),0);
+ let html=`<section class="card">
+ <div class="kicker">DAY ${current+1} · ${d.theme}</div>
+ <h2>${d.title}</h2>
+ <div class="question"><strong>오늘의 핵심 질문</strong><br>${d.q}</div>
+ <div class="quote">“${d.key}”</div>
+ </section>`;
+
+ html+=`<section class="card"><h3>① 오늘의 본문 읽기</h3>
+ <p class="hint">완독을 위한 통독 모드입니다. 총 ${totalCh}장 · 예상 약 ${totalCh*4}분. 이해되지 않는 부분은 멈추기보다 질문으로 표시하고 전체 흐름을 유지합니다.</p>
+ <a class="sectionlink" href="${BIBLE_URL}" target="_blank" rel="noopener">개역개정 온라인 성경 열기(대한성서공회) ↗</a>
+ <div class="checklist">`;
+ d.reads.forEach((x,i)=>{
+  const first=firstSeen[x];
+  const tag=(first<current)?`<span class="retag">DAY ${first+1} 재독</span>`:"";
+  html+=box(x+tag,checked(current,"read",i),`setCheck(${current},'read',${i},this.checked)`);
+ });
+ html+=`</div>`;
+ if(d.reads.some(r=>firstSeen[r]<current)){
+  html+=`<p class="hint">재독 본문은 앞선 날의 문맥(심판·실패)과 오늘의 문맥(약속·소망)을 비교하며 다시 읽으십시오. 같은 본문이 정경의 흐름에서 어떻게 다르게 들리는지가 오늘의 훈련입니다.</p>`;
+ }
+ html+=`<div class="rowbtns">
+ <button onclick="bulkRead(${current},true)">읽기 전체 체크</button>
+ <button onclick="bulkRead(${current},false)">읽기 체크 해제</button>
+ </div></section>`;
+
+ html+=`<section class="card"><h3>② 7대 신학 질문</h3><p class="hint">본문의 본래 의미를 먼저 확인한 뒤 정경 전체의 흐름에서 묵상하십시오.</p><div class="checklist">`;
+ theology.forEach((x,i)=>html+=box(`<strong>${x[0]}</strong> — ${x[1]}`,checked(current,"theo",i),`setCheck(${current},'theo',${i},this.checked)`));
+ html+=`</div>${noteArea(current,"theoNote","오늘 발견한 신학적 통찰을 기록하십시오...")}</section>`;
+
+ html+=`<section class="card"><h3>③ 설교 필터 · TEXT / THEOLOGY / GOSPEL / PEOPLE</h3><div class="checklist">`;
+ [["text","TEXT","본문이 실제로 무엇을 말하는가?"],["theology","THEOLOGY","하나님에 대해 무엇을 말하는가?"],["gospel","GOSPEL","복음과 어떻게 연결되는가?"],["people","PEOPLE","오늘의 성도에게 무엇을 요구하는가?"]].forEach(x=>html+=box(`<strong>${x[1]}</strong> — ${x[2]}`,checked(current,"filter",x[0]),`setCheck(${current},'filter','${x[0]}',this.checked)`));
+ html+=`</div>${noteArea(current,"sermon","설교자료가 아니라, 본문에서 발견한 한 문장을 기록하십시오...")}</section>`;
+
+ html+=`<section class="card"><h3>④ 목회자 자기진단</h3><div class="checklist">`;
+ reflection.forEach((x,i)=>html+=box(x,checked(current,"ref",i),`setCheck(${current},'ref',${i},this.checked)`));
+ html+=`</div>${noteArea(current,"repent","오늘 말씀 앞에서 내가 회개하거나 순종해야 할 것은 무엇인가?")}
+ ${noteArea(current,"prayer","오늘 말씀으로 누구를 위해 어떻게 기도할 것인가?","margin-top:9px")}</section>`;
+
+ html+=`<section class="card"><h3>⑤ 오늘의 영적 점검</h3>
+ <div class="metrics"><div class="metric"><strong id="dayPct">${dayCompletion(current)}%</strong><span>오늘 완료</span></div>
+ <div class="metric"><strong>${d.reads.length}</strong><span>읽기 본문</span></div>
+ <div class="metric"><strong>7</strong><span>신학 질문</span></div>
+ <div class="metric"><strong>5</strong><span>자기진단</span></div></div>
+ <p style="margin-top:16px"><strong>오늘 한 문장으로 답하십시오.</strong></p>
+ ${noteArea(current,"commit","“오늘 말씀 때문에 나는 ________ 하겠습니다.”")}
+ </section>`;
+
+ if(current===6){
+  const running=!!timerId, remain=timerRemain;
+  html+=`<section class="card"><h3>⑥ 7일째 — 성경 전체 10분 구술시험</h3>
+  <p>성경을 덮고 아래 타이머를 시작한 뒤, 녹음하며 다음 흐름을 설명하십시오.</p>
+  <div class="timerbox ${running?"running":""} ${remain<=0?"done":""}" id="timerBox">
+    <span class="clock" id="clock">${fmtClock(Math.max(0,remain))}</span>
+    <button class="primary" id="timerToggle" onclick="toggleTimer()">${running?"일시정지":(remain<600&&remain>0?"계속":"시작")}</button>
+    <button onclick="resetTimer()">초기화</button>
+    <span class="hint" id="timerHint">${remain<=0?"10분 종료 — 소감을 아래에 기록하십시오":"10분 안에 창조부터 새 창조까지"}</span>
+  </div>
+  <div class="question"><strong>창조 → 타락 → 노아 → 아브라함 → 출애굽 → 언약 → 가나안 → 사사 → 다윗 → 성전 → 왕국의 실패 → 포로 → 선지자의 약속 → 메시아 → 예수 그리스도 → 십자가 → 부활 → 성령 → 교회 → 선교 → 재림 → 새 창조</strong></div>
+  ${noteArea(6,"oral","10분 구술시험 후 발견한 부족한 점과 다시 공부할 주제를 기록하십시오...")}</section>`;
+ }
+ document.getElementById("content").innerHTML=html;
+ updateNav();updateProgress();
+}
+
+function bulkRead(d,v){
+ days[d].reads.forEach((_,i)=>{state[key(d,"read",i)]=v;});
+ markDone(d);save(v?"읽기 본문 전체 체크됨":"읽기 체크 해제됨");render();
+}
+
+/* ---------- 결산 리포트 ---------- */
+function showReport(){mode="report";render();window.scrollTo(0,0);}
+function openDay(i){mode="day";current=i;save(false);render();window.scrollTo(0,0);}
+function renderReport(){
+ let html=`<section class="card">
+ <div class="kicker">FINAL REPORT</div>
+ <h2>7일 결산 리포트</h2>
+ <p class="hint">7일간의 모든 기록을 한 화면에 모았습니다. 인쇄하여 다음 분기 재점검 자료로 보관하십시오.</p>`;
+ days.forEach((d,i)=>{
+  const pct=dayCompletion(i);
+  const doneAt=state[`d${i}_doneAt`];
+  const readsDone=d.reads.filter((_,r)=>checked(i,"read",r)).length;
+  html+=`<div class="report-day">
+  <h3>DAY ${i+1} · ${d.title} <span class="badge ${pct===100?"done":""}">${pct}%${doneAt?" · "+fmtDate(doneAt)+" 완주":""}</span></h3>
+  <p class="hint">본문 읽기 ${readsDone}/${d.reads.length} · ${d.theme}</p>`;
+  noteFields.forEach(([k,label])=>{
+   const v=getNote(i,k);
+   if(v)html+=`<div class="report-note"><b>${label}</b>${esc(v)}</div>`;
+  });
+  if(i===6&&getNote(6,"oral"))html+=`<div class="report-note"><b>구술시험 소감</b>${esc(getNote(6,"oral"))}</div>`;
+  html+=`</div>`;
+ });
+ html+=`<div class="rowbtns"><button class="primary" onclick="printPage()">이 리포트 인쇄 / PDF 저장</button><button onclick="openDay(${current})">일별 화면으로 돌아가기</button></div></section>`;
+ document.getElementById("content").innerHTML=html;
+ updateNav();updateProgress();
+}
+
+/* ---------- 타이머 (Day 7) ----------
+   다른 화면으로 이동해도 남은 시간은 유지되고,
+   화면에 시계가 없으면 인터벌이 스스로 멈춰 오류가 나지 않는다. */
+let timerRemain=600,timerId=null;
+function fmtClock(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+function syncTimerUI(){
+ const box=document.getElementById("timerBox");
+ if(!box)return;
+ const btn=document.getElementById("timerToggle");
+ document.getElementById("clock").textContent=fmtClock(Math.max(0,timerRemain));
+ box.classList.toggle("running",!!timerId);
+ box.classList.toggle("done",timerRemain<=0);
+ btn.textContent=timerId?"일시정지":(timerRemain<600&&timerRemain>0?"계속":"시작");
+ document.getElementById("timerHint").textContent=timerRemain<=0?"10분 종료 — 소감을 아래에 기록하십시오":"10분 안에 창조부터 새 창조까지";
+}
+function toggleTimer(){
+ if(timerId){stopTimer();syncTimerUI();return;}
+ if(timerRemain<=0)timerRemain=600;
+ timerId=setInterval(()=>{
+  const c=document.getElementById("clock");
+  if(!c){stopTimer();return;} /* 화면 이탈 시 자동 일시정지 */
+  timerRemain--;
+  c.textContent=fmtClock(Math.max(0,timerRemain));
+  if(timerRemain<=0){stopTimer();syncTimerUI();toast("구술시험 10분이 종료되었습니다");}
+ },1000);
+ syncTimerUI();
+}
+function resetTimer(){stopTimer();timerRemain=600;syncTimerUI();}
+
+/* ---------- 백업 ---------- */
+function exportData(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="7일말씀재정렬_기록_"+new Date().toISOString().slice(0,10)+".json";
+ a.click();URL.revokeObjectURL(a.href);
+ toast("기록을 JSON 파일로 내보냈습니다");
+}
+function importData(input){
+ const f=input.files[0];if(!f)return;
+ if(!confirm("가져온 기록이 현재 기록을 대체합니다. 계속하시겠습니까?")){input.value="";return;}
+ const r=new FileReader();
+ r.onload=()=>{
+  try{
+   const data=JSON.parse(r.result);
+   if(typeof data!=="object"||data===null||Array.isArray(data))throw 0;
+   state=data;
+   if(!state.startDate)state.startDate=new Date().toISOString();
+   current=Math.min(6,Math.max(0,Number(state.current||0)));
+   mode="day";
+   save("기록을 가져왔습니다");render();
+  }catch(e){toast("가져오기 실패: 올바른 백업 파일이 아닙니다");}
+ };
+ r.readAsText(f);input.value="";
+}
+
+/* ---------- 이동/유틸 ---------- */
+function prevDay(){if(mode!=="day"){openDay(current);return}if(current>0){current--;save(false);render();window.scrollTo(0,0)}}
+function nextDay(){if(mode!=="day"){openDay(current);return}if(current<6){current++;save(false);render();window.scrollTo(0,0)}}
+function dayOnly(dt){const x=new Date(dt);return new Date(x.getFullYear(),x.getMonth(),x.getDate());}
+function goToToday(){
+ if(!state.startDate)state.startDate=new Date().toISOString();
+ const n=Math.min(6,Math.max(0,Math.round((dayOnly(new Date())-dayOnly(state.startDate))/86400000)));
+ openDay(n);
+}
+function resetStartDate(){
+ if(confirm("시작일을 오늘로 재설정하시겠습니까? 기록은 유지됩니다.")){
+  state.startDate=new Date().toISOString();save("시작일을 오늘로 재설정했습니다");render();
+ }
+}
+function printPage(){window.print()}
+function resetAll(){if(confirm("모든 체크와 기록을 삭제하시겠습니까?\n(삭제 전에 JSON 내보내기로 백업을 권장합니다)")){state={version:DATA_VERSION,startDate:new Date().toISOString()};current=0;mode="day";resetTimer();save("모든 기록을 초기화했습니다");render()}}
+
+document.addEventListener("keydown",e=>{
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ const t=e.target.tagName;
+ if(t==="TEXTAREA"||t==="INPUT")return;
+ if(e.key==="ArrowLeft")prevDay();
+ if(e.key==="ArrowRight")nextDay();
+});
+window.addEventListener("beforeprint",()=>{
+ document.querySelectorAll("textarea").forEach(t=>{t.dataset.h=t.style.height||"";t.style.height="auto";t.style.height=Math.max(60,t.scrollHeight)+"px";});
+});
+window.addEventListener("afterprint",()=>{
+ document.querySelectorAll("textarea").forEach(t=>{t.style.height=t.dataset.h||"";});
+});
+let toastTimer=null;
+function toast(msg){
+ const el=document.getElementById("toast");
+ el.textContent=msg;el.classList.add("show");
+ clearTimeout(toastTimer);
+ toastTimer=setTimeout(()=>el.classList.remove("show"),1800);
+}
+
+if(!state.startDate){state.startDate=new Date().toISOString();save(false);}
+render();
+</script>
+</body>
+</html>
